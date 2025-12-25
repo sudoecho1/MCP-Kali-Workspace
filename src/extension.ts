@@ -109,12 +109,7 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
                 fs.mkdirSync(mcpDir, { recursive: true });
             }
 
-            progress.report({ message: 'Copying MCP server files...' });
-            
-            // Copy bundled resources
-            const resourcesDir = path.join(context.extensionPath, 'resources');
-            const mcpServerPy = path.join(resourcesDir, 'mcp_server.py');
-            const requirementsTxt = pathDownloading latest MCP server files...' });
+            progress.report({ message: 'Downloading latest MCP server files...' });
             
             // Try to download latest resources from upstream
             let downloadSuccess = false;
@@ -138,7 +133,12 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
             
             if (!fs.existsSync(mcpServerPy) || !fs.existsSync(requirementsTxt)) {
                 throw new Error('MCP server files not found. Please reinstall the extension.');
-            }});
+            }
+            
+            fs.copyFileSync(mcpServerPy, path.join(mcpDir, 'mcp_server.py'));
+            fs.copyFileSync(requirementsTxt, path.join(mcpDir, 'requirements.txt'));
+
+            progress.report({ message: 'Creating Python virtual environment...' });
             
             // Create venv in local cache directory to avoid SMB/network share symlink issues
             const isWindows = process.platform === 'win32';
