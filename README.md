@@ -77,21 +77,29 @@ your-workspace/
 
 ### In Your Home Directory
 ```
-~/.cache/mcp-kali-workspace/   # (Linux/macOS) from workspace's `.mcp-kali/` directory
-2. **Cached Python Environment** - Uses shared venv in `~/.cache/mcp-kali-workspace/`
-3. **Remote Kali API** - Connects to `kali-server-mcp` on your Kali VM (port 5000)
-4. **GitHub Copilot** - Uses MCP protocol to invoke Kali security tools
-5   └── lib/
+~/.cache/mcp-kali-workspace/   # (Linux/macOS)
+└── venv/                       # Shared Python virtual environment
+    ├── bin/
+    ├── include/
+    ├── lib/
+    └── pyvenv.cfg
+
+%USERPROFILE%\.cache\mcp-kali-workspace\  # (Windows)
+└── venv\                       # Shared Python virtual environment
+    ├── Scripts\
+    ├── Lib\
+    └── pyvenv.cfg
 ```
 
 **Note:** The Python virtual environment is stored in your home directory's cache to avoid symlink issues with SMB shares and network drives. This venv is shared across all workspaces using the extension.
 
 ## How It Works
 
-1. **Local MCP Server** - Runs `mcp_server.py` in workspace's `.mcp-kali/` directory
-2. **Remote Kali API** - Connects to `kali-server-mcp` on your Kali VM (port 5000)
-3. **GitHub Copilot** - Uses MCP protocol to invoke Kali security tools
-4. **Tool Execution** - Commands execute on Kali VM, results return to VS Code
+1. **Local MCP Server** - Runs `mcp_server.py` from workspace's `.mcp-kali/` directory
+2. **Cached Python Environment** - Uses shared venv in `~/.cache/mcp-kali-workspace/` (avoids symlink issues on network shares)
+3. **Remote Kali API** - Connects to `kali-server-mcp` on your Kali VM (port 5000)
+4. **GitHub Copilot** - Uses MCP protocol to invoke Kali security tools
+5. **Tool Execution** - Commands execute on Kali VM, results return to VS Code
 
 ## Usage Examples
 
@@ -153,8 +161,7 @@ rm -rf ~/.cache/mcp-kali-workspace
 # Windows
 rmdir /s %USERPROFILE%\.cache\mcp-kali-workspace
 ```
-
-Then re-run `MCP Kali: Setup Workspace` in any workspace
+un `MCP Kali: Setup Workspace` again in any workspace any workspace
 Then run `MCP Kali: Setup Workspace` again.
 
 ### Network Connectivity
@@ -171,11 +178,12 @@ curl http://<kali-ip>:5000/health
 Edit `.vscode/mcp.json`:
 ```json
 {
-  "servers": {on your machine
-- **Shared Virtual Environment** - Single Python venv cached in `~/.cache/` for all workspaces
-- **Network Only** - Only connects to Kali VM you specify
-- **No Telemetry** - Extension doesn't collect or send usage data
-- **Workspace Isolation** - Each workspace has independent configuration and can connect to different Kali IPs
+  "servers": {
+    "kaliMcp": {
+      "type": "stdio",
+      "command": "/path/to/.mcp-kali/mcp-wrapper.sh",
+      "args": [
+        "--server",
         "http://<kali-ip>:<custom-port>"
       ]
     }
