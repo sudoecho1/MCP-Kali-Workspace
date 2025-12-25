@@ -29,8 +29,7 @@
     "Machine Learning"
   ],
   "activationEvents": [
-    "onCommand:mcp-kali.setup",
-    "onCommand:mcp-kali.remove"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {

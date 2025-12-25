@@ -2,35 +2,27 @@
 
 ## What You Need to Do
 
-1. **Get the MCP server files from GitLab:**
-   ```bash
-   cd resources/
-   curl -o mcp_server.py https://gitlab.com/kalilinux/packages/mcp-kali-server/-/raw/kali/master/mcp_server.py
-   curl -o requirements.txt https://gitlab.com/kalilinux/packages/mcp-kali-server/-/raw/kali/master/requirements.txt
-   cd ..
-   ```
-
-2. **Install dependencies:**
+1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Compile the extension:**
+2. **Compile the extension:**
    ```bash
    npm run compile
    ```
 
-4. **Test it:**
+3. **Test it:**
    - Press F5 in VS Code to launch Extension Development Host
    - In the new window, open a workspace
    - Run: `MCP Kali: Setup Workspace`
 
-5. **Package for installation:**
+4. **Package for installation:**
    ```bash
    npm run package
    ```
 
-6. **Install the extension:**
+5. **Install the extension:**
    ```bash
    code --install-extension mcp-kali-workspace-0.1.0.vsix
    ```

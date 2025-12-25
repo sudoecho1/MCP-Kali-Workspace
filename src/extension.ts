@@ -7,6 +7,14 @@ import * as https from 'https';
 export function activate(context: vscode.ExtensionContext) {
     console.log('MCP Kali Workspace extension activated');
 
+    // Initialize cache on activation
+    initializeCache(context).catch(error => {
+        console.error('Failed to initialize cache during activation:', error);
+        vscode.window.showWarningMessage(
+            `MCP Kali: Cache initialization failed. You may need to install Python. Error: ${error.message}`
+        );
+    });
+
     let setupCommand = vscode.commands.registerCommand('mcp-kali.setup', async () => {
         await setupWorkspace(context);
     });
@@ -72,6 +80,51 @@ function downloadFile(url: string, destPath: string): Promise<void> {
     });
 }
 
+async function initializeCache(context: vscode.ExtensionContext): Promise<void> {
+    const isWindows = process.platform === 'win32';
+    const pythonCmd = isWindows ? 'python' : 'python3';
+    const homeDir = require('os').homedir();
+    const cacheDir = path.join(homeDir, '.cache', 'mcp-kali-workspace');
+    const venvDir = path.join(cacheDir, 'venv');
+    const venvBinDir = isWindows ? path.join(venvDir, 'Scripts') : path.join(venvDir, 'bin');
+
+    console.log('Starting cache initialization...');
+    console.log('Cache directory:', cacheDir);
+    
+    // Download initial resources
+    console.log('Downloading resources...');
+    await downloadResources(context);
+    console.log('Resources downloaded successfully');
+
+    // Create cache directory if it doesn't exist
+    if (!fs.existsSync(cacheDir)) {
+        console.log('Creating cache directory...');
+        fs.mkdirSync(cacheDir, { recursive: true });
+    }
+
+    // Create venv if it doesn't exist
+    if (!fs.existsSync(venvDir)) {
+        console.log('Creating Python virtual environment in cache...');
+        execSync(`${pythonCmd} -m venv "${venvDir}"`, { stdio: 'inherit' });
+        console.log('Virtual environment created');
+    } else {
+        console.log('Virtual environment already exists');
+    }
+
+    // Install requirements
+    const resourcesDir = path.join(context.extensionPath, 'resources');
+    const requirementsTxt = path.join(resourcesDir, 'requirements.txt');
+    
+    if (fs.existsSync(requirementsTxt)) {
+        const pipCmd = isWindows ? path.join(venvBinDir, 'pip') : path.join(venvBinDir, 'pip');
+        console.log('Installing MCP Kali dependencies...');
+        execSync(`"${pipCmd}" install -q -r "${requirementsTxt}"`, { stdio: 'inherit' });
+        console.log('Dependencies installed');
+    }
+
+    console.log('Cache initialization completed successfully');
+}
+
 async function setupWorkspace(context: vscode.ExtensionContext) {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     
@@ -111,11 +164,9 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
 
             progress.report({ message: 'Downloading latest MCP server files...' });
             
-            // Try to download latest resources from upstream
-            let downloadSuccess = false;
+            // Download latest resources from upstream
             try {
                 await downloadResources(context);
-                downloadSuccess = true;
             } catch (error) {
                 console.warn('Failed to download latest resources, using bundled version:', error);
                 vscode.window.showWarningMessage(
@@ -126,7 +177,7 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
 
             progress.report({ message: 'Copying MCP server files...' });
             
-            // Copy resources (either freshly downloaded or bundled)
+            // Copy resources
             const resourcesDir = path.join(context.extensionPath, 'resources');
             const mcpServerPy = path.join(resourcesDir, 'mcp_server.py');
             const requirementsTxt = path.join(resourcesDir, 'requirements.txt');
@@ -138,33 +189,14 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
             fs.copyFileSync(mcpServerPy, path.join(mcpDir, 'mcp_server.py'));
             fs.copyFileSync(requirementsTxt, path.join(mcpDir, 'requirements.txt'));
 
-            progress.report({ message: 'Creating Python virtual environment...' });
+            progress.report({ message: 'Creating wrapper script...' });
             
-            // Create venv in local cache directory to avoid SMB/network share symlink issues
+            // Get paths to cached venv
             const isWindows = process.platform === 'win32';
-            const pythonCmd = isWindows ? 'python' : 'python3';
             const homeDir = require('os').homedir();
             const cacheDir = path.join(homeDir, '.cache', 'mcp-kali-workspace');
             const venvDir = path.join(cacheDir, 'venv');
             const venvBinDir = isWindows ? path.join(venvDir, 'Scripts') : path.join(venvDir, 'bin');
-            
-            // Create cache directory
-            if (!fs.existsSync(cacheDir)) {
-                fs.mkdirSync(cacheDir, { recursive: true });
-            }
-            
-            // Create venv if it doesn't exist
-            if (!fs.existsSync(venvDir)) {
-                execSync(`${pythonCmd} -m venv "${venvDir}"`, { stdio: 'inherit' });
-            }
-
-            progress.report({ message: 'Installing dependencies...' });
-            
-            // Install requirements
-            const pipCmd = isWindows ? path.join(venvBinDir, 'pip') : path.join(venvBinDir, 'pip');
-            execSync(`"${pipCmd}" install -r "${path.join(mcpDir, 'requirements.txt')}"`, { stdio: 'inherit' });
-
-            progress.report({ message: 'Creating wrapper script...' });
             
             // Create wrapper script (OS-specific)
             let wrapperPath: string;
@@ -309,16 +341,16 @@ async function removeWorkspace() {
 }
 
 export function deactivate() {
-    // Clean up cache on extension uninstall/disable
-    const homeDir = require('os').homedir();
-    const cacheDir = path.join(homeDir, '.cache', 'mcp-kali-workspace');
-    
-    if (fs.existsSync(cacheDir)) {
-        try {
+    // Clean up cache on extension uninstall/disable (synchronous to ensure completion)
+    try {
+        const homeDir = require('os').homedir();
+        const cacheDir = path.join(homeDir, '.cache', 'mcp-kali-workspace');
+        
+        if (fs.existsSync(cacheDir)) {
             fs.rmSync(cacheDir, { recursive: true, force: true });
             console.log('MCP Kali cache cleaned up successfully');
-        } catch (error) {
-            console.error('Failed to clean up MCP Kali cache:', error);
         }
+    } catch (error) {
+        console.error('Failed to clean up MCP Kali cache:', error);
     }
 }
