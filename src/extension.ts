@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import * as https from 'https';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('MCP Kali Workspace extension activated');
@@ -15,6 +16,60 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(setupCommand, removeCommand);
+}
+
+async function downloadResources(context: vscode.ExtensionContext): Promise<void> {
+    const resourcesDir = path.join(context.extensionPath, 'resources');
+    
+    // Ensure resources directory exists
+    if (!fs.existsSync(resourcesDir)) {
+        fs.mkdirSync(resourcesDir, { recursive: true });
+    }
+
+    const MCP_SERVER_URL = 'https://gitlab.com/kalilinux/packages/mcp-kali-server/-/raw/kali/master/mcp_server.py';
+    const REQUIREMENTS_URL = 'https://gitlab.com/kalilinux/packages/mcp-kali-server/-/raw/kali/master/requirements.txt';
+
+    try {
+        await Promise.all([
+            downloadFile(MCP_SERVER_URL, path.join(resourcesDir, 'mcp_server.py')),
+            downloadFile(REQUIREMENTS_URL, path.join(resourcesDir, 'requirements.txt'))
+        ]);
+        console.log('MCP Kali resources updated successfully');
+    } catch (error) {
+        console.error('Failed to download resources:', error);
+        // Continue even if download fails - use bundled resources if available
+    }
+}
+
+function downloadFile(url: string, destPath: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        https.get(url, (response) => {
+            // Handle redirects
+            if (response.statusCode === 301 || response.statusCode === 302) {
+                return downloadFile(response.headers.location!, destPath)
+                    .then(resolve)
+                    .catch(reject);
+            }
+            
+            if (response.statusCode !== 200) {
+                reject(new Error(`Failed to download: ${response.statusCode} ${response.statusMessage}`));
+                return;
+            }
+
+            const file = fs.createWriteStream(destPath);
+            response.pipe(file);
+
+            file.on('finish', () => {
+                file.close();
+                resolve();
+            });
+
+            file.on('error', (err) => {
+                fs.unlink(destPath, () => {});
+                reject(err);
+            });
+        }).on('error', reject);
+    });
 }
 
 async function setupWorkspace(context: vscode.ExtensionContext) {
@@ -59,12 +114,31 @@ async function setupWorkspace(context: vscode.ExtensionContext) {
             // Copy bundled resources
             const resourcesDir = path.join(context.extensionPath, 'resources');
             const mcpServerPy = path.join(resourcesDir, 'mcp_server.py');
+            const requirementsTxt = pathDownloading latest MCP server files...' });
+            
+            // Try to download latest resources from upstream
+            let downloadSuccess = false;
+            try {
+                await downloadResources(context);
+                downloadSuccess = true;
+            } catch (error) {
+                console.warn('Failed to download latest resources, using bundled version:', error);
+                vscode.window.showWarningMessage(
+                    'Could not download latest MCP server files (offline or network issue). Using bundled version.',
+                    'OK'
+                );
+            }
+
+            progress.report({ message: 'Copying MCP server files...' });
+            
+            // Copy resources (either freshly downloaded or bundled)
+            const resourcesDir = path.join(context.extensionPath, 'resources');
+            const mcpServerPy = path.join(resourcesDir, 'mcp_server.py');
             const requirementsTxt = path.join(resourcesDir, 'requirements.txt');
             
-            fs.copyFileSync(mcpServerPy, path.join(mcpDir, 'mcp_server.py'));
-            fs.copyFileSync(requirementsTxt, path.join(mcpDir, 'requirements.txt'));
-
-            progress.report({ message: 'Creating Python virtual environment...' });
+            if (!fs.existsSync(mcpServerPy) || !fs.existsSync(requirementsTxt)) {
+                throw new Error('MCP server files not found. Please reinstall the extension.');
+            }});
             
             // Create venv in local cache directory to avoid SMB/network share symlink issues
             const isWindows = process.platform === 'win32';
