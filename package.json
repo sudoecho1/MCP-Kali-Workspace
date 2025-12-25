@@ -1,0 +1,61 @@
+{
+  "name": "mcp-kali-workspace",
+  "displayName": "MCP Kali Workspace",
+  "description": "Integrate Kali Linux security tools with GitHub Copilot via Model Context Protocol for AI-assisted penetration testing and CTF challenges",
+  "version": "0.2.1",
+  "publisher": "sudoecho",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sudoecho1/MCP-Kali-Workspace"
+  },
+  "license": "MIT",
+  "keywords": [
+    "kali",
+    "security",
+    "pentesting",
+    "mcp",
+    "copilot",
+    "ctf",
+    "hacking",
+    "nmap",
+    "security-tools"
+  ],
+  "engines": {
+    "vscode": "^1.102.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "activationEvents": [
+    "onCommand:mcp-kali.setup",
+    "onCommand:mcp-kali.remove"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcp-kali.setup",
+        "title": "MCP Kali: Setup Workspace"
+      },
+      {
+        "command": "mcp-kali.remove",
+        "title": "MCP Kali: Remove Workspace Configuration"
+      }
+    ]
+  },
+  "scripts": {
+    "download-resources": "node scripts/download-resources.js",
+    "vscode:prepublish": "npm run download-resources && npm run compile",
+    "compile": "node node_modules/typescript/bin/tsc -p ./",
+    "watch": "node node_modules/typescript/bin/tsc -watch -p ./",
+    "package": "npm run download-resources && node node_modules/@vscode/vsce/vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.102.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.0"
+  }
+}

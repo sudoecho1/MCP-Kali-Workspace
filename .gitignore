@@ -1,0 +1,8 @@
+node_modules/
+out/
+*.vsix
+.vscode-test/
+
+# Downloaded resources (fetched during build)
+resources/mcp_server.py
+resources/requirements.txt
