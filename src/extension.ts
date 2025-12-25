@@ -308,4 +308,17 @@ async function removeWorkspace() {
     }
 }
 
-export function deactivate() {}
+export function deactivate() {
+    // Clean up cache on extension uninstall/disable
+    const homeDir = require('os').homedir();
+    const cacheDir = path.join(homeDir, '.cache', 'mcp-kali-workspace');
+    
+    if (fs.existsSync(cacheDir)) {
+        try {
+            fs.rmSync(cacheDir, { recursive: true, force: true });
+            console.log('MCP Kali cache cleaned up successfully');
+        } catch (error) {
+            console.error('Failed to clean up MCP Kali cache:', error);
+        }
+    }
+}
