@@ -95,11 +95,12 @@ your-workspace/
 
 ## How It Works
 
-1. **Local MCP Server** - Runs `mcp_server.py` from workspace's `.mcp-kali/` directory
-2. **Cached Python Environment** - Uses shared venv in `~/.cache/mcp-kali-workspace/` (avoids symlink issues on network shares)
-3. **Remote Kali API** - Connects to `kali-server-mcp` on your Kali VM (port 5000)
-4. **GitHub Copilot** - Uses MCP protocol to invoke Kali security tools
-5. **Tool Execution** - Commands execute on Kali VM, results return to VS Code
+1. **Extension Installation** - Creates shared Python venv in `~/.cache/mcp-kali-workspace/` and installs dependencies
+2. **Workspace Setup** - Downloads latest `mcp_server.py` from GitLab and creates workspace configuration
+3. **Local MCP Server** - Runs `mcp_server.py` from workspace's `.mcp-kali/` directory using shared venv
+4. **Remote Kali API** - Connects to `kali-server-mcp` on your Kali VM (port 5000)
+5. **GitHub Copilot** - Uses MCP protocol to invoke Kali security tools
+6. **Tool Execution** - Commands execute on Kali VM, results return to VS Code
 
 ## Usage Examples
 
@@ -153,7 +154,7 @@ rm -rf .mcp-kali
 
 ### Clean Cache Directory
 
-If you want to recreate the shared venv:
+The cache directory is automatically cleaned when you uninstall the extension. If you want to manually recreate the shared venv:
 ```bash
 # Linux/macOS
 rm -rf ~/.cache/mcp-kali-workspace
@@ -161,8 +162,8 @@ rm -rf ~/.cache/mcp-kali-workspace
 # Windows
 rmdir /s %USERPROFILE%\.cache\mcp-kali-workspace
 ```
-un `MCP Kali: Setup Workspace` again in any workspace any workspace
-Then run `MCP Kali: Setup Workspace` again.
+
+Then reload VS Code (the extension will recreate the venv on activation).
 
 ### Network Connectivity
 
