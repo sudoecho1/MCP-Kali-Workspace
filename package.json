@@ -2,7 +2,7 @@
   "name": "mcp-kali-workspace",
   "displayName": "MCP Kali Workspace",
   "description": "Integrate Kali Linux security tools with GitHub Copilot via Model Context Protocol for AI-assisted penetration testing and CTF challenges",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "publisher": "sudoecho",
   "icon": "icon.png",
   "repository": {
