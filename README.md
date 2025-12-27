@@ -1,6 +1,16 @@
-# MCP Kali Workspace
+<div align="center">
+  <img src="icon.png" alt="RAG Pilot Icon" width="1024">
+  
+  # RAG Pilot
+  
+  [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-blue)](https://marketplace.visualstudio.com/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  
+  **AI-Powered Penetration Testing with GitHub Copilot and Kali Linux**
+  
+</div>
 
-**AI-Powered Penetration Testing with GitHub Copilot and Kali Linux**
+# MCP Kali Workspace
 
 Integrate Kali Linux security tools directly into VS Code through Model Context Protocol (MCP), enabling GitHub Copilot to execute security commands, automate reconnaissance, and assist with CTF challenges in real-time.
 
