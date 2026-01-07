@@ -20,6 +20,10 @@ Integrate Kali Linux security tools directly into VS Code through Model Context 
 - 🪟 **Cross-Platform** - Works on Windows, Linux, and macOS
 - 🧹 **Easy Cleanup** - Remove workspace configuration with one command
 
+## Companion Extensions
+
+**Enhance your security testing with [AnyRAG Pilot](https://marketplace.visualstudio.com/items?itemName=sudoecho.anyrag-pilot)** - Index your security research, CTF write-ups, payloads, and vulnerability reports with AI-powered semantic search. Search them directly from Copilot Chat while using MCP Kali Workspace for powerful penetration testing insights at your fingertips.
+
 ## Requirements
 
 ### On Your Kali VM
